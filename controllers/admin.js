@@ -13,12 +13,10 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  Product.create({
-    title,
-    imageUrl,
-    price,
-    description,
-  })
+
+  const product = new Product(title, price, description, imageUrl);
+  product
+    .save()
     .then(() => res.redirect("/admin/products"))
     .catch((err) => console.log(err));
 };
@@ -29,7 +27,7 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect("/");
   }
   const prodId = req.params.productId;
-  Product.findByPk(prodId)
+  Product.findById(prodId)
     .then((product) => {
       res.render("admin/edit-product", {
         pageTitle: "Edit Product",
@@ -48,7 +46,7 @@ exports.postEditProduct = (req, res, next) => {
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
 
-  Product.findByPk(prodId).then((product) => {
+  Product.findById(prodId).then((product) => {
     // тут ми просто перезаписуємо цей обєкт який отримали
     product.title = updatedTitle;
     product.price = updatedPrice;
@@ -63,7 +61,7 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   // Метод sequilize, можемо ще параметри використовувати
-  Product.findAll().then((products) => {
+  Product.fetchAll().then((products) => {
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",
