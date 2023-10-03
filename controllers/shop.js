@@ -18,7 +18,7 @@ exports.getProducts = (req, res, next) => {
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
 
-  Product.findByPk(prodId).then((product) => {
+  Product.findById(prodId).then((product) => {
     res.render("shop/product-detail", {
       product: product,
       pageTitle: product.title,
@@ -28,7 +28,7 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.findAll()
+  Product.fetchAll()
     .then((products) => {
       res.render("shop/product-list", {
         prods: products,

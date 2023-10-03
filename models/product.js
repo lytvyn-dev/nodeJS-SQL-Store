@@ -2,7 +2,8 @@ const mongodb = require("mongodb");
 const { getDb } = require("../util/database");
 
 class Product {
-  constructor(title, price, description, imageUrl) {
+  constructor(title, price, description, imageUrl, id) {
+    this._id = id ? new mongodb.ObjectId(id) : null;
     this.title = title;
     this.price = price;
     this.description = description;
@@ -12,12 +13,20 @@ class Product {
   save() {
     // отримуємо доступ до нашої db
     const db = getDb();
-    // Кажемо в якій collection ми хочемо праацювати. Якщо колекції не існує , то вона створиться коли ми перший раз внесемо якісь дані
-    return db
-      .collection("products")
-      .insertOne(this)
-      .then(result)
-      .catch((err) => console.log(err));
+    // Робимо так щоб потім зробити на ньому then().catch() а не на кожній операції окремо один і той самий код
+    let dbOperation;
+
+    if (this._id) {
+      // перший аргумет цей в якому обєкті ми хочемо update, другий це шо саме ми хочемо замінити
+      dbOperation = db
+        .collection("products")
+        // також використовується $set: {}
+        .updateOne({ _id: this._id }, { $set: this });
+    } else {
+      dbOperation = db.collection("products").insertOne(this);
+    }
+    // Ось тут цей then().cathc()
+    return dbOperation.then().catch((err) => console.log(err));
   }
 
   static findById(id) {
@@ -43,10 +52,14 @@ class Product {
       .find()
       .toArray()
       .then((products) => {
-        console.log(products);
         return products;
       })
       .catch((err) => console.log(err));
+  }
+
+  static delete(id) {
+    const db = getDb();
+    return db.collection("products").deleteOne({ _id: new mongodb.ObjectId(id) });
   }
 }
 

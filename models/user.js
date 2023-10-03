@@ -1,11 +1,28 @@
-import { DataTypes } from "sequelize";
+const { getDb } = require("../util/database");
+const mongodb = require("mongodb");
 
-const sequelize = require("../util/database");
+class User {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
 
-const User = sequelize.define("user", {
-  id: { type: DataTypes.INTEGER, autoIncrement: true, allowNull: false, primaryKey: true },
-  name: DataTypes.STRING,
-  email: DataTypes.STRING,
-});
+  save() {
+    const db = getDb();
+    return db
+      .collection("users")
+      .insertOne(this)
+      .then((result) => console.log("USER CREATED!"))
+      .catch((err) => console.log(err));
+  }
+
+  findById(id) {
+    const db = getDb();
+    return db
+      .collection("users")
+      .find({ _id: new mongodb.ObjectId(id) })
+      .next();
+  }
+}
 
 module.exports = User;
